@@ -23,16 +23,16 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const examples = [
   {
-    prompt: "ukiyo-e clouds",
+    prompt: "outdoor office in San Francisco",
     image:
-      "https://replicate.delivery/pbxt/TlCblQultrIRGBqczlBKfezvCHO89m4cflGCItimmiiXYA5gA/out-0.png",
-    predictionId: "ligukgf4vnbitaopx6m7cos4ou",
+      "https://i.imgur.com/vVMRRUQ.png",
+    predictionId: "ligukgf4vnbitaopx6m7cos4ox",
   },
   {
-    prompt: "muddy ground with colorful autumn leaves, seamless texture",
+    prompt: "gorgeous outdoor office in san francisco, string lights",
     image:
-      "https://replicate.delivery/pbxt/EZOe7RiVzyUGJiN2q8IftvCPC5sawrDY14CkAF3y7LzhUgcQA/out-0.png",
-    predictionId: "idzgepp6mzgqxm3dvc2o3q4oby",
+      "https://i.imgur.com/1dD3e0H.png",
+    predictionId: "idzgepp6mzgqxm3dvc2o3q4ob1",
   },
   {
     prompt: "redwood tree bark",
@@ -89,14 +89,14 @@ const examples = [
     image:
       "https://replicate.delivery/pbxt/GkavaFZq1XbUG9Dqtx2YUaQ3ITKyfxdp6qarY9KKwNMdYOOIA/out-0.png",
     predictionId: "sayfrouoonc3zh3alt2bzljszy",
-  },
+  }
 ];
 
 const IMAGE_SIZE = 180;
 
 export default function Home({ prediction, baseUrl }) {
   const router = useRouter();
-  const { id } = router.query;
+  const { id } = useState(null);
   const [prompt, setPrompt] = useState(null);
   const [cols, setCols] = useState(null);
   const [rows, setRows] = useState(null);
@@ -163,11 +163,12 @@ export default function Home({ prediction, baseUrl }) {
   const getPrediction = async (id) => {
     const response = await fetch(`/api/predictions/${id}`, { method: "GET" });
     let result = await response.json();
-    setWallpaper(result.output[0]);
-    setPrompt(result.input.prompt);
-
-    router.query.id = id;
-    router.push(router);
+    if (result.output) {
+      setWallpaper(result.output[0]);
+      setPrompt(result.input.prompt);
+      router.query.id = id;
+      router.push(router);
+    }
   };
 
   const copyToClipboard = (e) => {
@@ -307,9 +308,12 @@ export default function Home({ prediction, baseUrl }) {
   const [index, setIndex] = useState(1);
 
   const handleInspire = () => {
-    const newWallpaper = examples[index];
     setIndex(index + 1);
-
+    if (index >= examples.length - 1) {
+      setIndex(0);
+    }
+    const newWallpaper = examples[index];
+    console.log(newWallpaper, index);
     if (newWallpaper.prompt == prompt) {
       handleInspire();
     } else {
@@ -341,7 +345,7 @@ export default function Home({ prediction, baseUrl }) {
 
           <link
             rel="icon"
-            href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖼️</text></svg>"
+            href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏞️</text></svg>"
           />
 
           <meta property="og:description" content={pkg.appMetaDescription} />
@@ -463,43 +467,26 @@ export default function Home({ prediction, baseUrl }) {
           </p>
         </div>
 
-        {/* Repeating tiles */}
-        <div
-          className={`${
-            blur && "blur-sm"
-          } transition duration-200 ease-linear delay-50`}
-          style={{
-            display: "grid",
-            gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-            gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
-          }}
-        >
-          {Array(rows)
-            .fill(1)
-            .map((_value, row) =>
-              Array(cols)
-                .fill(1)
-                .map((_value, col) => {
-                  let index = (row + 1) * (col + 1);
-                  let delay = row * col + 1;
+        {/* Display image */}
 
-                  return (
-                    <img
-                      key={`tile-${index}`}
-                      id={index}
-                      className={`tile animate-fadein ${
-                        !blur &&
-                        index != 0 &&
-                        "hover:rounded-sm hover:shadow-xl transition ease-linear delay-100"
-                      }`}
-                      style={{ animationDelay: `${delay * 0.03}s` }}
-                      src={wallpaper}
-                      alt=""
-                    />
-                  );
-                })
-            )}
-        </div>
+      <div
+        className={`tile animate-fadein ${
+          !blur &&
+          index != 0 &&
+          "hover:rounded-sm hover:shadow-xl transition ease-linear delay-300"
+        }`}
+        style={{
+          background: `url(${wallpaper})`, 
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+      </div>
 
         {/* Canvas */}
         <div className="fixed hidden top-0 left-0">
@@ -616,7 +603,7 @@ export default function Home({ prediction, baseUrl }) {
                       className="-ml-0.5 mr-2 h-4 w-4"
                       aria-hidden="true"
                     />
-                    Make tile
+                    Make background
                   </button>
                 </div>
               )}
@@ -846,7 +833,7 @@ export function Save({ open, setOpen, wallpaper, download }) {
                   </div>
                 </div>
                 <div>
-                  <span className="text-6xl">🖼️</span>
+                  <span className="text-6xl">🏞️</span>
                   <p className="mt-4 text-gray-500">Single Tile</p>
                   <div className="mt-2">
                     <button
@@ -927,7 +914,7 @@ export function Sidebar({
                           className="text-white w-full hover:bg-gray-50 hover:text-gray-900 group flex items-center px-4 py-2 text-sm font-medium rounded-md"
                         >
                           <ArrowDownTrayIcon className="text-gray-200 group-hover:text-gray-500 mr-3 flex-shrink-0 h-6 w-6" />
-                          Download current tile
+                          Download current background
                         </button>
 
                         <button
@@ -935,7 +922,7 @@ export function Sidebar({
                           className="text-white w-full hover:bg-gray-50 hover:text-gray-900 group flex items-center px-4 py-2 text-sm font-medium rounded-md"
                         >
                           <LinkIcon className="text-gray-200 group-hover:text-gray-500 mr-3 flex-shrink-0 h-6 w-6" />
-                          Copy link to current tile
+                          Copy link to current background
                         </button>
 
                         <a
